@@ -14,7 +14,7 @@ type EmployeeDashboardProps = {
 export function EmployeeDashboard({
   initialEmployees,
 }: EmployeeDashboardProps) {
-  const employeesQuery = useQuery({
+  const { data: employees = [] } = useQuery<Employee[]>({
     initialData: initialEmployees,
     queryKey: EMPLOYEES_QUERY_KEY,
     queryFn: async () => initialEmployees,
@@ -24,13 +24,15 @@ export function EmployeeDashboard({
     refetchOnReconnect: false,
   });
 
-  const employees = (employeesQuery.data ?? []) as Employee[];
-
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-8 px-4 pb-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-8 xl:flex-row xl:items-start">
-        <EmployeeTable employees={employees} />
-        <EmployeeCreateForm />
+        <div className="min-w-0 flex-1 pt-10">
+          <EmployeeTable employees={employees} />
+        </div>
+        <div className="w-full pt-10 xl:sticky xl:top-0 xl:w-[24rem] xl:flex-none">
+          <EmployeeCreateForm />
+        </div>
       </div>
     </div>
   );

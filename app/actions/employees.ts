@@ -2,8 +2,9 @@
 
 import { createEmployeeInBackend, getErrorMessage } from "@/lib/employees/api";
 import {
-  createEmployeeFormSchema,
   mapFormValuesToEmployeePayload,
+  validateCreateEmployeeForm,
+  type CreateEmployeeFormFieldErrors,
   type CreateEmployeeFormValues,
   type Employee,
 } from "@/lib/employees/schema";
@@ -15,7 +16,7 @@ type CreateEmployeeActionSuccess = {
 
 type CreateEmployeeActionFailure = {
   ok: false;
-  fieldErrors?: Partial<Record<keyof CreateEmployeeFormValues, string>>;
+  fieldErrors?: CreateEmployeeFormFieldErrors;
   message: string;
 };
 
@@ -26,31 +27,12 @@ export type CreateEmployeeActionResult =
 export async function createEmployeeAction(
   values: CreateEmployeeFormValues
 ): Promise<CreateEmployeeActionResult> {
-  const result = createEmployeeFormSchema.safeParse(values);
+  const result = validateCreateEmployeeForm(values);
 
   if (!result.success) {
-    const fieldErrors: Partial<Record<keyof CreateEmployeeFormValues, string>> =
-      {};
-
-    for (const issue of result.error.issues) {
-      const fieldName = issue.path[0];
-
-      if (typeof fieldName !== "string") {
-        continue;
-      }
-
-      const key = fieldName as keyof CreateEmployeeFormValues;
-
-      if (fieldErrors[key]) {
-        continue;
-      }
-
-      fieldErrors[key] = issue.message;
-    }
-
     return {
       ok: false as const,
-      fieldErrors,
+      fieldErrors: result.fieldErrors,
       message: "Please correct the highlighted fields.",
     };
   }

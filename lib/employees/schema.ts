@@ -56,6 +56,9 @@ export const createEmployeeFormSchema = z.object({
 export type Employee = z.infer<typeof employeeSchema>;
 export type CreateEmployeePayload = z.infer<typeof createEmployeeRequestSchema>;
 export type CreateEmployeeFormValues = z.infer<typeof createEmployeeFormSchema>;
+export type CreateEmployeeFormFieldErrors = Partial<
+  Record<keyof CreateEmployeeFormValues, string>
+>;
 
 export const defaultCreateEmployeeFormValues: CreateEmployeeFormValues = {
   firstName: "",
@@ -79,4 +82,38 @@ export function mapFormValuesToEmployeePayload(
     jobDescription: values.jobDescription.trim(),
     annualIncome: Number(values.annualIncome),
   });
+}
+
+export function validateCreateEmployeeForm(values: CreateEmployeeFormValues) {
+  const result = createEmployeeFormSchema.safeParse(values);
+
+  if (result.success) {
+    return {
+      success: true as const,
+      data: result.data,
+    };
+  }
+
+  const fieldErrors: CreateEmployeeFormFieldErrors = {};
+
+  for (const issue of result.error.issues) {
+    const fieldName = issue.path[0];
+
+    if (typeof fieldName !== "string") {
+      continue;
+    }
+
+    const key = fieldName as keyof CreateEmployeeFormValues;
+
+    if (fieldErrors[key]) {
+      continue;
+    }
+
+    fieldErrors[key] = issue.message;
+  }
+
+  return {
+    success: false as const,
+    fieldErrors,
+  };
 }

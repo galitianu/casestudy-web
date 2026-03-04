@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormSetError } from "react-hook-form";
 
 import {
   createEmployeeAction,
@@ -32,10 +32,11 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { EMPLOYEES_QUERY_KEY } from "@/lib/employees/query";
 import {
-  createEmployeeFormSchema,
   type Department,
   departmentValues,
   defaultCreateEmployeeFormValues,
+  validateCreateEmployeeForm,
+  type CreateEmployeeFormFieldErrors,
   type CreateEmployeeFormValues,
   type Employee,
 } from "@/lib/employees/schema";
@@ -57,21 +58,7 @@ export function EmployeeCreateForm() {
     onSuccess: (result) => {
       if (!result.ok) {
         setServerError(result.message);
-
-        if (result.fieldErrors) {
-          for (const [fieldName, message] of Object.entries(
-            result.fieldErrors,
-          )) {
-            if (!message) {
-              continue;
-            }
-
-            form.setError(fieldName as keyof CreateEmployeeFormValues, {
-              type: "server",
-              message,
-            });
-          }
-        }
+        applyFieldErrors(form.setError, result.fieldErrors);
 
         return;
       }
@@ -92,23 +79,11 @@ export function EmployeeCreateForm() {
   });
 
   function onSubmit(values: CreateEmployeeFormValues) {
-    const result = createEmployeeFormSchema.safeParse(values);
+    const result = validateCreateEmployeeForm(values);
 
     if (!result.success) {
       form.clearErrors();
-
-      for (const issue of result.error.issues) {
-        const fieldName = issue.path[0];
-
-        if (typeof fieldName !== "string") {
-          continue;
-        }
-
-        form.setError(fieldName as keyof CreateEmployeeFormValues, {
-          type: issue.code,
-          message: issue.message,
-        });
-      }
+      applyFieldErrors(form.setError, result.fieldErrors);
 
       return;
     }
@@ -119,18 +94,17 @@ export function EmployeeCreateForm() {
   }
 
   return (
-    <div className="w-full xl:sticky xl:top-0 xl:-mt-10 xl:w-[24rem] xl:flex-none xl:self-start xl:pt-10">
-      <Card className="w-full border border-border/70 bg-card/85 shadow-sm ring-0">
-        <CardHeader>
-          <CardTitle>Add employee</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              className="space-y-5"
-              onSubmit={form.handleSubmit(onSubmit)}
-              noValidate
-            >
+    <Card className="w-full border border-border/70 bg-card/85 shadow-sm ring-0">
+      <CardHeader>
+        <CardTitle>Add employee</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            className="space-y-5"
+            onSubmit={form.handleSubmit(onSubmit)}
+            noValidate
+          >
             <div className="grid gap-4 sm:grid-cols-2">
               <EmployeeTextField
                 control={form.control}
@@ -241,16 +215,35 @@ export function EmployeeCreateForm() {
               </div>
             ) : null}
 
-              <Button disabled={createEmployeeMutation.isPending} type="submit">
-                <PlusIcon data-icon="inline-start" />
-                {createEmployeeMutation.isPending
-                  ? "Creating..."
-                  : "Create employee"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+            <Button disabled={createEmployeeMutation.isPending} type="submit">
+              <PlusIcon data-icon="inline-start" />
+              {createEmployeeMutation.isPending
+                ? "Creating..."
+                : "Create employee"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
+}
+
+function applyFieldErrors(
+  setError: UseFormSetError<CreateEmployeeFormValues>,
+  fieldErrors?: CreateEmployeeFormFieldErrors,
+) {
+  if (!fieldErrors) {
+    return;
+  }
+
+  for (const [fieldName, message] of Object.entries(fieldErrors)) {
+    if (!message) {
+      continue;
+    }
+
+    setError(fieldName as keyof CreateEmployeeFormValues, {
+      type: "manual",
+      message,
+    });
+  }
 }

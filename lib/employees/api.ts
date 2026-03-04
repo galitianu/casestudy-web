@@ -20,6 +20,10 @@ export class ApiRequestError extends Error {
 }
 
 function buildBackendUrl(pathname: string) {
+  if (!EMPLOYEE_API_BASE_URL) {
+    throw new Error("EMPLOYEE_API_URL is not configured.");
+  }
+
   return new URL(pathname, EMPLOYEE_API_BASE_URL).toString();
 }
 
