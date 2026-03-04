@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon, WalletIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
@@ -11,13 +11,7 @@ import {
 } from "@/app/actions/employees";
 import { EmployeeTextField } from "@/components/employees/employee-text-field";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -125,35 +119,32 @@ export function EmployeeCreateForm() {
   }
 
   return (
-    <Card className="border border-border/70 bg-card/85 shadow-sm ring-0">
-      <CardHeader>
-        <CardTitle>Add employee</CardTitle>
-        <CardDescription>
-          Submit a validated form and refresh the list without a full page
-          reload.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            className="space-y-5"
-            onSubmit={form.handleSubmit(onSubmit)}
-            noValidate
-          >
+    <div className="w-full xl:sticky xl:top-0 xl:-mt-10 xl:w-[24rem] xl:flex-none xl:self-start xl:pt-10">
+      <Card className="w-full border border-border/70 bg-card/85 shadow-sm ring-0">
+        <CardHeader>
+          <CardTitle>Add employee</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form
+              className="space-y-5"
+              onSubmit={form.handleSubmit(onSubmit)}
+              noValidate
+            >
             <div className="grid gap-4 sm:grid-cols-2">
               <EmployeeTextField
                 control={form.control}
                 disabled={createEmployeeMutation.isPending}
                 name="firstName"
                 label="First name"
-                placeholder="Andrei"
+                placeholder="Max"
               />
               <EmployeeTextField
                 control={form.control}
                 disabled={createEmployeeMutation.isPending}
                 name="lastName"
                 label="Last name"
-                placeholder="Popescu"
+                placeholder="Mustermann"
               />
             </div>
 
@@ -250,20 +241,16 @@ export function EmployeeCreateForm() {
               </div>
             ) : null}
 
-            <Button disabled={createEmployeeMutation.isPending} type="submit">
-              <PlusIcon data-icon="inline-start" />
-              {createEmployeeMutation.isPending
-                ? "Creating..."
-                : "Create employee"}
-            </Button>
-
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <WalletIcon className="size-4" />
-              Valid inputs are enforced before the request is sent.
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+              <Button disabled={createEmployeeMutation.isPending} type="submit">
+                <PlusIcon data-icon="inline-start" />
+                {createEmployeeMutation.isPending
+                  ? "Creating..."
+                  : "Create employee"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

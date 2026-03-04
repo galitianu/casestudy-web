@@ -17,7 +17,7 @@ type EmployeeTableProps = {
 
 export function EmployeeTable({ employees }: EmployeeTableProps) {
   return (
-    <Card className="border border-border/70 bg-card/85 shadow-sm ring-0">
+    <Card className="min-w-0 flex-1 border border-border/70 bg-card/85 shadow-sm ring-0">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -33,7 +33,7 @@ export function EmployeeTable({ employees }: EmployeeTableProps) {
               <TableHead>Name</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Personnel #</TableHead>
+              <TableHead className="whitespace-nowrap">Personnel #</TableHead>
               <TableHead className="text-right">Age</TableHead>
               <TableHead className="text-right">Income</TableHead>
             </TableRow>
